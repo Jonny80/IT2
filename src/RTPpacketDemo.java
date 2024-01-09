@@ -44,18 +44,23 @@ abstract class RTPpacketDemo {
 
   /**
    * Constructor of an RTPpacket object from header fields and payload bitstream
-   * @param PType
+   * @param PType payload Type
    * @param Framenb
-   * @param Time
-   * @param data
-   * @param data_length
+   * @param Time Timestamp ?
+   * @param data payload
+   * @param data_length payload size
    */
   public RTPpacketDemo(int PType, int Framenb, int Time, byte[] data, int data_length) {
     // fill by default header fields:
+    // set due to config
     Version = 2;
+    // is set if needed by following protocols e.g. encryption
     Padding = 0;
+    // if header is extended
     Extension = 0;
+    //CSRC identifier
     CC = 0;
+    // for application specific events e.g. end of sequence
     Marker = 1;
     Ssrc = 0;
 
