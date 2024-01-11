@@ -58,18 +58,25 @@ public class Rtsp extends RtspDemo {
 
     @Override
     boolean teardown() {
-        send_RTSP_request("teardowm");
+        if (state == State.PLAYING || state==State.READY){
+            RTSPSeqNb++;
+            send_RTSP_request("teardowm");
+            boolean ready = parse_server_response() < 300 ;
+            if (ready){
+                state=State.INIT;
+                return true;
+            }
+        }
+        logger.log(Level.WARNING,"Client in an invalid State: cancel request");
         return false;
     }
 
     @Override
     void describe() {
-        System.out.println("Data before describe: " + duration + " "+framerate);
         RTSPSeqNb++;
         send_RTSP_request("describe");
         boolean ready = parse_server_response() < 300 ;
         if (ready){
-            System.out.println("Data after describe: " + duration + " "+framerate);
             return;
         }
         logger.log(Level.WARNING,"Describe response failed");
@@ -77,8 +84,14 @@ public class Rtsp extends RtspDemo {
 
     @Override
     void options() {
+        RTSPSeqNb++;
         send_RTSP_request("options");
-
+        boolean ready = parse_server_response() < 300 ;
+        if (ready){
+            System.out.println("Options are: " + getOptions() );
+            return;
+        }
+        logger.log(Level.WARNING,"Error getting Options");
     }
     /**
      * Sends a RTSP request to the server
