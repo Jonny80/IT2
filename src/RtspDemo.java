@@ -280,28 +280,27 @@ abstract class RtspDemo {
     // v=  (protocol version)
     // o=  (owner/creator and session identifier).
     // s=  (session name)
-    rtspBody.write("v=0" + CRLF);
-    rtspBody.write("o=- 0 0 IN IP4 0.0.0.0" + CRLF);
+    rtspBody.write("v=1.0" + CRLF);
+    rtspBody.write("o=HTW DD " + 12345 + " IN RTP/ UDP "+ getRTP_dest_port() + CRLF);
     rtspBody.write("s=RTSP-Streaming" + CRLF);
-    rtspBody.write("i=" + CRLF);
+    rtspBody.write("i=Beleg IT2" + CRLF);
 
     // Time description
     // t= (time the session is active)
-    rtspBody.write("t=0 0" + CRLF);
+    rtspBody.write("t="+ duration + CRLF);
     // Stream control
     //
 
     // Media description
     // m=  (media name and transport address)
-    rtspBody.write("m=video ..."  + CRLF);
-    rtspBody.write("a=control ..." + CRLF);
+    rtspBody.write("m=video "+getVideoFileName()+" RTP/UDP "+getRTP_dest_port()  + CRLF);
+    rtspBody.write("a=control "+ rtspUrl+"/"+getVideoFileName() + CRLF);
     rtspBody.write("a=rtpmap:" + MJPEG_TYPE + " JPEG/90000" + CRLF);
-    // rtspBody.write("a=mimetype:string;\"video/mjpeg\"" + CRLF);
     rtspBody.write("a=framerate:" + meta.getFramerate() + CRLF);
     // Audio ist not supported yet
-    rtspBody.write("m=audio " + "0" + " RTP/AVP " + "0" + CRLF);
-    rtspBody.write("a=rtpmap:" + "0" + " PCMU/8000" + CRLF);
-    rtspBody.write("a=control:trackID=" + "1" + CRLF);
+    rtspBody.write("m=audio " + "0" + " None " + "0" + CRLF);
+    rtspBody.write("a=rtpmap:" + "0" + " None" + CRLF);
+    rtspBody.write("a=control:trackID=" + "0" + CRLF);
     //
     rtspBody.write("a=range:npt=0-");
     if (meta.getDuration() > 0.0) {
