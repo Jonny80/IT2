@@ -206,6 +206,7 @@ abstract class RtspDemo {
     } catch (Exception ex) {
       ex.printStackTrace();
       logger.log(Level.SEVERE, "Exception caught: " + ex);
+      //TODO maybe dont shut server down
       System.exit(0);
     }
 
