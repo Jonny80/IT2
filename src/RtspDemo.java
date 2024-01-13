@@ -370,8 +370,10 @@ abstract class RtspDemo {
         } else if (line.contains("Transport")) {
           sdpTransportLine = line;
           RTP_dest_port = Integer.parseInt( line.split("=")[1].split("-")[0] );
-          FEC_dest_port = RTP_dest_port + 0;
-          logger.log(Level.FINE, "Client-Port: " + RTP_dest_port);
+          // TODO check why + 0 maybe sdp needed to be implemented
+          FEC_dest_port = Integer.parseInt( line.split("=")[1].split("-")[1] );
+          logger.log(Level.INFO, "Client-RTP-Port: " + RTP_dest_port);
+          logger.log(Level.INFO, "Client-FEC-Port: " + FEC_dest_port);
         }
         // else is any other field, not checking for now
 
