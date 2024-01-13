@@ -56,7 +56,7 @@ public class Client {
   DatagramSocket FECsocket; // socket to be used to send and receive UDP packets for FEC
   private final RtpHandler rtpHandler;
   static int RTP_RCV_PORT = 25000; // port where the client will receive the RTP packets
-  static int FEC_RCV_PORT = 25002; // port where the client will receive the RTP packets
+  static int FEC_RCV_PORT = 25001; // port where the client will receive the RTP packets
 
   static final int MAX_FRAME_SIZE = 65536;
   static final int RCV_RATE = 2;  // interval for receiving loop
@@ -322,6 +322,7 @@ public class Client {
       }
     }
   }
+
   class FecTimerListener implements ActionListener {
     byte[] buf = new byte[MAX_FRAME_SIZE]; // allocate memory to receive UDP data from server
 
