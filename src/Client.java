@@ -53,10 +53,10 @@ public class Client {
   // RTP variables:
   // ----------------
   DatagramSocket RTPsocket; // socket to be used to send and receive UDP packets
-  //DatagramSocket FECsocket; // socket to be used to send and receive UDP packets for FEC
+  DatagramSocket FECsocket; // socket to be used to send and receive UDP packets for FEC
   private final RtpHandler rtpHandler;
   static int RTP_RCV_PORT = 25000; // port where the client will receive the RTP packets
-  // static int FEC_RCV_PORT = 25002; // port where the client will receive the RTP packets
+  static int FEC_RCV_PORT = 25002; // port where the client will receive the RTP packets
 
   static final int MAX_FRAME_SIZE = 65536;
   static final int RCV_RATE = 2;  // interval for receiving loop
@@ -80,7 +80,7 @@ public class Client {
   private static Rtsp rtsp;
 
   public Client() {
-    rtpHandler = new RtpHandler(false); // TODO move
+    rtpHandler = new RtpHandler(true); // TODO move
     // build GUI - Frame
     f.addWindowListener(
         new WindowAdapter() {
@@ -154,6 +154,7 @@ public class Client {
     // init timer
     // --------------------------
     timer = new Timer(RCV_RATE, new timerListener());
+    timer.addActionListener(new FecTimerListener());
     timer.setInitialDelay(0);
     timer.setCoalesce(true); // combines events
   }
@@ -210,9 +211,9 @@ public class Client {
         try {
           RTPsocket = new DatagramSocket(RTP_RCV_PORT );  // receive Media data
           // for now FEC packets are received via RTP-Port, so keep comment below
-          // FECsocket = new DatagramSocket(FEC_RCV_PORT);
-
+          FECsocket = new DatagramSocket(FEC_RCV_PORT);
           RTPsocket.setSoTimeout(1 ); // smallest value (ms) for blocking time
+          FECsocket.setSoTimeout(1 ); // smallest value (ms) for blocking time
           logger.log(Level.FINE, "Socket receive buffer: " + RTPsocket.getReceiveBufferSize());
 
           rtpHandler.setFecDecryptionEnabled(checkBoxFec.isSelected());
@@ -275,6 +276,7 @@ public class Client {
         rtpHandler.reset();
         timer.stop();  // stop playback
         timerPlay.stop();
+        FECsocket.close();
         RTPsocket.close();
       }
     }
@@ -312,7 +314,21 @@ public class Client {
       DatagramPacket rcvDp = new DatagramPacket(buf, buf.length); // RTP needs UDP socket
       try {
         RTPsocket.receive(rcvDp); // receive the DP from the socket:
+        rtpHandler.processRtpPacket(rcvDp.getData(), rcvDp.getLength());
+      } catch (InterruptedIOException iioe) {
+        // System.out.println("Nothing to read");
+      } catch (IOException ioe) {
+        logger.log(Level.SEVERE, "Exception caught: " + ioe);
+      }
+    }
+  }
+  class FecTimerListener implements ActionListener {
+    byte[] buf = new byte[MAX_FRAME_SIZE]; // allocate memory to receive UDP data from server
 
+    public void actionPerformed(ActionEvent e) {
+      DatagramPacket rcvDp = new DatagramPacket(buf, buf.length); // RTP needs UDP socket
+      try {
+        FECsocket.receive(rcvDp); // receive the DP from the socket:
         rtpHandler.processRtpPacket(rcvDp.getData(), rcvDp.getLength());
       } catch (InterruptedIOException iioe) {
         // System.out.println("Nothing to read");
