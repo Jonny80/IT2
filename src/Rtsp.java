@@ -60,7 +60,7 @@ public class Rtsp extends RtspDemo {
     boolean teardown() {
         if (state == State.PLAYING || state==State.READY){
             RTSPSeqNb++;
-            send_RTSP_request("teardowm");
+            send_RTSP_request("teardown");
             boolean ready = parse_server_response() < 300 ;
             if (ready){
                 state=State.INIT;
@@ -113,7 +113,7 @@ public class Rtsp extends RtspDemo {
             }
             if (request_type.equals("SETUP")){
                 //logger.log(Level.INFO,"Destination Port is: ",getRTP_dest_port());
-                RTSPBufferedWriter.write(String.format("Transport: RTP/AVP;unicast;client_port=%s-%s%s",25000,25000 + 1,CRLF));
+                RTSPBufferedWriter.write(String.format("Transport: RTP/AVP;unicast;client_port=%s-%s%s",25000,25001,CRLF));
             }
             RTSPBufferedWriter.write(CRLF);
             // Triggers sending
