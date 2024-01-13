@@ -140,7 +140,7 @@ abstract class FecHandlerDemo {
 
     // get RTP List
     ArrayList<Integer> list = fec.getRtpList();
-    logger.log(Level.FINER, "FEC: set list: " + seqNrFec + " " + list.toString());
+    logger.log(Level.INFO, "FEC: set list: " + seqNrFec + " " + list.toString());
 
     // set list to get fec packet nr
     list.forEach((E) -> fecNr.put(E, seqNrFec)); // FEC-packet

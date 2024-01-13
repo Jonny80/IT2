@@ -80,8 +80,8 @@ public class RtpHandler {
         playbackIndex = -1;
 
         if (!isServer) {
-            //mediaPackets.clear();
-            //sameTimestamps.clear();
+            mediaPackets.clear();
+            sameTimestamps.clear();
             statistics = new ReceptionStatistic();
         }
     }
@@ -272,7 +272,6 @@ public class RtpHandler {
         }
 
         int pt = packet.getpayloadtype();
-
         if (pt == RTP_PAYLOAD_JPEG) {
             statistics.receivedPackets++;
             statistics.latestSequenceNumber = seqNr;
@@ -289,6 +288,7 @@ public class RtpHandler {
             logger.log(Level.FINER, "FEC: set sameTimestamps: " + (0xFFFFFFFFL & ts)
                     + " " + tmpTimestamps.toString());
         } else if (pt == RTP_PAYLOAD_FEC) {
+            logger.log(Level.INFO,"FEC Packet received");
             fecHandler.rcvFecPacket(packet);
         }
         // else: ignore packet
@@ -388,7 +388,7 @@ public class RtpHandler {
         int index = number % 0x10000; // account overflow of SNr (16 Bit)
         RTPpacket packet = mediaPackets.get(index);
         logger.log(Level.FINER, "FEC: get RTP nu: " + index);
-
+        fecHandler.checkCorrection(index, mediaPackets);
         if (packet == null) {
             statistics.packetsLost++;
             logger.log(Level.WARNING, "FEC: Media lost: " + index);
@@ -397,10 +397,10 @@ public class RtpHandler {
             if (fecDecodingEnabled && fecCorrectable) {
                 packet = fecHandler.correctRtp(index, mediaPackets);
                 statistics.correctedPackets++;
-                logger.log(Level.INFO, "---> FEC: correctable: " + index);
+                logger.log(Level.FINER, "---> FEC: correctable: " + index);
             } else {
                 statistics.notCorrectedPackets++;
-                logger.log(Level.INFO, "---> FEC: not correctable: " + index);
+                logger.log(Level.FINER, "---> FEC: not correctable: " + index);
                 return null;
             }
         }
