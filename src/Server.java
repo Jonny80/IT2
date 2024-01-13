@@ -332,12 +332,12 @@ public class Server extends JFrame implements ActionListener, ChangeListener {
         senddp = new DatagramPacket(packet_bits, packet_bits.length, ClientIPAddr, rtsp.getRTP_dest_port() );
 
         sendPacketWithError(senddp, false); // Send with packet loss
-
         if (rtpHandler.isFecPacketAvailable()) {
           logger.log(Level.FINE, "FEC-Encoder ready...");
           byte[] fecPacket = rtpHandler.createFecPacket();
           // send to the FEC dest_port
           senddp = new DatagramPacket(fecPacket, fecPacket.length, ClientIPAddr, rtsp.getFEC_dest_port() );
+          //logger.log(Level.INFO,"sending FEC package");
           sendPacketWithError(senddp, true);
         }
 
@@ -361,7 +361,7 @@ public class Server extends JFrame implements ActionListener, ChangeListener {
     if (fec) label = " fec ";
     else label = " media ";
     if (random.nextDouble() > lossRate) {
-      logger.log(Level.FINE, "Send frame: " + imagenb + label);
+      logger.log(Level.FINER, "Send frame: " + imagenb + label);
       RTPsocket.send(senddp);
     } else {
       System.err.println("Dropped frame: " + imagenb + label);
