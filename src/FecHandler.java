@@ -23,43 +23,54 @@ public class FecHandler extends FecHandlerDemo {
      */
     @Override
     boolean checkCorrection(int nr, HashMap<Integer, RTPpacket> mediaPackets) {
-        nrLost++;
-        RTPpacket missing = getMissingPacket(nr, mediaPackets);
-        return (missing == null);
+        if (!fecNr.containsKey(nr)) {
+            System.out.println("No fec packet for seqNr found");
+            return false;
+        }
+        int fecNR = fecNr.get(nr);
+        if (!fecStack.containsKey(fecNR)) {
+            System.out.println("FecStack does not contain FeCPacket");
+            return false;
+        }
+        FECpacket feCpacket = fecStack.get(fecNR);
+        if (feCpacket == null) {
+            System.out.println("No fec packet found");
+            return false;
+        }
+        List<RTPpacket> rtPpacketList = getCorrespondingMediaPackets(nr,mediaPackets,false);
+        if (rtPpacketList == null || rtPpacketList.isEmpty()) {
+            System.out.println("Packetlist is empty or null");
+            return false;
+        }
+        System.out.println("*******************************************");
+        System.out.println(String.format("size corresponding media Packets %s",rtPpacketList.size()));
+        int supposedLength = rtPpacketList.size() - 1;
+        rtPpacketList = rtPpacketList.stream().filter(Objects::nonNull).toList();
+        System.out.println(String.format("size corresponding media Packets after filter %s",rtPpacketList.size()));
+        System.out.println("*******************************************");
+        return rtPpacketList.size() >= supposedLength;
     }
 
     // restore package by using xor
     // needed is fec package and one rtp package
     @Override
     RTPpacket correctRtp(int nr, HashMap<Integer, RTPpacket> mediaPackets) {
-        FECpacket feCpacket = fecStack.get(fecNr.get(nr));
-        RTPpacket missing = getMissingPacket(nr, mediaPackets);
-        if (missing == null) {
-            nrNotCorrected++;
-            return null;
-        }
-        // restore from other rtp package
-        // Move to checkCorrection
-        RTPpacket restoredPacket;
-        logger.log(Level.INFO,"packetSize: FEC " + feCpacket.payload.length+" RTP: "+missing.payload.length);
-        //Retoring package Data
-        nrCorrected++;
-        return null;
+        int fecNR = fecNr.get(nr);
+        FECpacket feCpacket = fecStack.get(fecNR);
+        List<RTPpacket> requiredPackets = getCorrespondingMediaPackets(nr,mediaPackets,true);
+        if (requiredPackets == null) return null;
+        requiredPackets.forEach(feCpacket::addRtp);
+        return feCpacket.getLostRtp(nr);
     }
-
-    RTPpacket getMissingPacket(int nr, HashMap<Integer, RTPpacket> mediaPackets) {
-        FECpacket feCpacket = fecStack.get(fecNr.get(nr));
+    List<RTPpacket> getCorrespondingMediaPackets(int nr,HashMap<Integer, RTPpacket> mediaPackets,boolean filter) {
+        int fecNR = fecNr.get(nr);
+        FECpacket feCpacket = fecStack.get(fecNR);
         if (feCpacket == null) return null;
-
-        feCpacket.printHeaders();
-        // Should be 2
-        List<RTPpacket> rtPpacketList = feCpacket.getRtpList().stream().map(mediaPackets::get).filter(Objects::nonNull).toList();
-        if (!rtPpacketList.isEmpty()){
-            rtPpacketList.get(0).printheader();
-        }else {
-            logger.log(Level.WARNING,"RTP packet not found");
-
-        }
-        return rtPpacketList.get(0);
+        if (!fecList.containsKey(nr)) return null;
+        if (filter) return fecList.get(nr).stream().map(mediaPackets::get).filter(Objects::nonNull).toList();
+        return fecList.get(nr).stream().map(mediaPackets::get).toList();
     }
+
+
+
 }

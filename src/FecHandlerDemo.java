@@ -19,9 +19,9 @@ abstract class FecHandlerDemo {
   FECpacket fec;
 
   // Receiver
-  HashMap<Integer, FECpacket> fecStack = new HashMap<>(); // list of fec packets
-  HashMap<Integer, Integer> fecNr = new HashMap<>(); // Snr of corresponding fec packet
-  HashMap<Integer, List<Integer>> fecList = new HashMap<>(); // list of involved media packets
+  HashMap<Integer, FECpacket> fecStack = new HashMap<>(); // list of fec packets key is fecNr
+  HashMap<Integer, Integer> fecNr = new HashMap<>(); // Snr of corresponding fec packet key is seqNr
+  HashMap<Integer, List<Integer>> fecList = new HashMap<>(); // list of involved media packets key is seqNR
 
   int playCounter = 0; // SNr of RTP-packet to play next, initialized with first received packet
 
@@ -107,7 +107,9 @@ abstract class FecHandlerDemo {
 
   /** Reset of fec group and variables */
   private void clearSendGroup() {
-    // TODO
+    fecNr.clear();
+    fecStack.clear();
+    fecList.clear();
   }
 
   /**
@@ -140,7 +142,7 @@ abstract class FecHandlerDemo {
 
     // get RTP List
     ArrayList<Integer> list = fec.getRtpList();
-    logger.log(Level.INFO, "FEC: set list: " + seqNrFec + " " + list.toString());
+    logger.log(Level.FINER, "FEC: set list: " + seqNrFec + " " + list.toString());
 
     // set list to get fec packet nr
     list.forEach((E) -> fecNr.put(E, seqNrFec)); // FEC-packet

@@ -271,9 +271,9 @@ public class Client {
     public void actionPerformed(ActionEvent e) {
       logger.log(Level.INFO, "Teardown Button pressed ! ");
       if (rtsp.teardown()) {
+        rtpHandler.reset();
         statusLabel.setText("INIT ");
         progressPosition.setValue(0);
-        rtpHandler.reset();
         timer.stop();  // stop playback
         timerPlay.stop();
         FECsocket.close();
